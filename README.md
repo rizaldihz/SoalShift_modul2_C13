@@ -462,5 +462,88 @@ Ket:
 NB: Dilarang menggunakan crontab dan tidak memakai argumen ketika menjalankan program.
 #
 ## Jawab
-Pada nomer
+Pada nomer 5, kita diminta untuk membuat `log#.log` pada direktori berformat `/home/[user]/log/dd-mm-yyyy:hh-mi`, setiap menit dengan # adalah hasil increment mulai dari 1 setiap menitnya. Setelah 30 menit, maka akan dibuat folder baru `/home/[user]/log/dd-mm-yyyy:hh-mi` berdasarkan waktu sekarang. Karena kami berasumsi increment akan terus increment tanpa kembali ke 1 sekalipun pada folder lain, maka kami berkesimpulan bahwa daemon tersebut tidak perlu menyimpan atau mengecek sampai mana ia tadi telah membuat file `log#.log`, hanya terus buat `log#.log` berdasarkan increment dan tidak melihat file yang dihapus atau angka kembali ke 1. <br>
+Maka langkah yang bisa kita lakukan adalah membuat daemon dengan fungsi mengcopy `/var/log/syslog` kedalam `log#.log` pada direktori ``/home/[user]/log/dd-mm-yyyy:hh-mi`.
+```c
+void logthefile(int* iter, char** dir)
+{   
+    chdir("/");
+    FILE* fdsyslog;
+    FILE* fdout;
+    fdsyslog = fopen("var/log/syslog","r");
+    printf("%d\n",*iter);
+
+    char buff[20];
+
+    if((*iter - 1)%30 == 0){
+        memset(buff,0,sizeof(buff));
+
+        time_t now = time(NULL);
+        strftime(buff, 20, "%d:%m:%Y-%H:%M", localtime(&now));
+
+        strcpy(*dir,"home/duhbuntu/log/");
+        strcat(*dir,buff);
+        
+        mkdir(*dir,0777);
+        // printf("disini buat folder\n");
+    }
+
+    char* angka = malloc(1000000);
+    snprintf(angka, sizeof angka, "%d", *iter); 
+
+    char* nama = malloc(1000000);
+    strcpy(nama,*dir);
+    strcat(nama,"/log");
+    strcat(nama,angka);
+    strcat(nama,".log");
+
+    // printf("%s\n%s\n",*dir,nama);
+
+    fdout = fopen(nama,"w+");
+    char isi;
+    while((isi = fgetc(fdsyslog)) != EOF){
+        fputc(isi, fdout);
+    }
+    fclose(fdsyslog);
+    fclose(fdout);
+
+    (*iter)++;
+}
+```
++ Langkah pertama adalah apabila pada setiap iterasi ada pada kelipatan 30, maka buat folder baru berdasarkan format `dd-mm-yyyy:hh-mi` menggunakan `mkdir()`. `strftime(buff, 20, "%d:%m:%Y-%H:%M", localtime(&now))` berfungsi untuk mengconvert `time_t` menjadi `string` yang disimpan pada `buff` sesuai format yang kita tentukan.
+```c
+if((*iter - 1)%30 == 0){
+    memset(buff,0,sizeof(buff));
+    time_t now = time(NULL);
+    strftime(buff, 20, "%d:%m:%Y-%H:%M", localtime(&now));
+    strcpy(*dir,"home/duhbuntu/log/");
+    strcat(*dir,buff);
+    
+    mkdir(*dir,0777);
+    // printf("disini buat folder\n");
+}
+```
++ Langkah kedua adalah buka isi file `/var/log/syslog` menggunakan `fopen()`
+```c
+chdir("/");
+FILE* fdsyslog;
+FILE* fdout;
+fdsyslog = fopen("var/log/syslog","r");
+``` 
++ Langkah selanjutnya adalah membuka file `/home/[user]/log/[waktu]/log#.log` untuk penulisan `/var/log/syslog`.
+```c
+strcpy(nama,*dir);
+strcat(nama,"/log");
+strcat(nama,angka);
+strcat(nama,".log");
+fdout = fopen(nama,"w+");
+```
++ Langkah selanjutnya adalah kita log file tersebut dengan `fgetc` dari `/var/log/syslog` ke `log#.log`
+```c
+char isi;
+while((isi = fgetc(fdsyslog)) != EOF){
+    fputc(isi, fdout);
+}
+```
++ Terakhir adalah update iterasi dan path direktori dan simpan nilai nya
 #
