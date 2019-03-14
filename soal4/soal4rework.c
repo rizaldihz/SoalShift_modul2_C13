@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <time.h>
 
-void dietyuk(int* ke)
+void dietyuk()
 {
     time_t now;
     double det;
@@ -21,23 +21,29 @@ void dietyuk(int* ke)
         return;
     }
     det = difftime(now,st.st_atime);
+    int iterasi = 1;
     char* namafile = malloc(1000000);
     char* urutan = malloc(1000000);
-    snprintf(urutan, sizeof urutan, "%d", *ke);
+    snprintf(urutan, sizeof urutan, "%d", iterasi);
+    struct stat fp = {0};
     strcpy(namafile, "/home/duhbuntu/Documents/makanan/makan_sehat");
-    if (det <= 30.0){
+    while (det <= 30.0){
         FILE* fd;
+        snprintf(urutan, sizeof urutan, "%d", iterasi);
         strcat(namafile,urutan);
         strcat(namafile,".txt");
-        fd = fopen(namafile,"w+");
-        fclose(fd);
-        (*ke)++;
+        if(stat(namafile,&fp) == -1){
+            fd = fopen(namafile,"w+");
+            fclose(fd);
+            break;
+        }
+        strcpy(namafile, "/home/duhbuntu/Documents/makanan/makan_sehat");
+        iterasi++;
     }
         
 }
 
 int main(){
-    int sekarang = 1;
     pid_t pid, sid;
 
     pid = fork();
@@ -66,7 +72,7 @@ int main(){
     close(STDOUT_FILENO);
     close(STDERR_FILENO);
     while(1){
-        dietyuk(&sekarang);
+        dietyuk();
         sleep(5);
     }
     exit(EXIT_SUCCESS);
