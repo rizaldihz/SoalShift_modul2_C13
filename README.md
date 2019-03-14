@@ -344,7 +344,108 @@ Catatan: <br>
 * Contoh nama file : makan_sehat1.txt, makan_sehat2.txt, dst
 #
 ## Jawab
-asd
+Pada nomor 4, karena kita diminta untuk membuat file `makan_sehat#.txt` setiap file `makan_enak.txt` dibuka, maka kita harus menggunakan daemon. Namun karena interpretasi kami terhadap soal ada dua, yakni, apabila ada 3 file `makan_sehat1.txt`,`makan_sehat2.txt`,`makan_sehat3.txt`, apabila `makan_sehat2.txt` dihapus maka kami beranggapan ada dua kemungkinan, bahwa pada detik ke 5n selanjutnya maka akan dibuat file `makan_sehat2.txt` atau lanjut ke `makan_sehat4.txt`. Dan karena kami beranggapan setiap daemon mati, maka urutan bisa diulang kembali ke satu atau sekalipun daemon mati maka urutan akan lanjut dari file sebelumnya, maka kami membuat dua macam daemon.
+Namun cara kerjanya tetap sama, yakni cek apakah file tersebut telah dibuka beberapa waktu ini, lalu hitung apakah selisihnya masih dalam selang 30 detik. <br><br>
+*Tak memperhatikan urutan*
+```c
+void dietyuk(int* ke)
+{
+    time_t now;
+    double det;
+    time(&now);
+    struct stat st = {0};
+    if (stat("/home/duhbuntu/Documents/makanan/makan_enak.txt", &st) == -1) {
+        perror("Gagal ");
+        return;
+    }
+    det = difftime(now,st.st_atime);
+    char* namafile = malloc(1000000);
+    char* urutan = malloc(1000000);
+    snprintf(urutan, sizeof urutan, "%d", *ke);
+    strcpy(namafile, "/home/duhbuntu/Documents/makanan/makan_sehat");
+    if (det <= 30.0){
+        FILE* fd;
+        strcat(namafile,urutan);
+        strcat(namafile,".txt");
+        fd = fopen(namafile,"w+");
+        fclose(fd);
+        (*ke)++;
+    }
+        
+}
+```
+*Memperhatikan urutan* 
+```c
+void dietyuk()
+{
+    time_t now;
+    double det;
+    time(&now);
+    struct stat st = {0};
+    if (stat("/home/duhbuntu/Documents/makanan/makan_enak.txt", &st) == -1) {
+        perror("Gagal ");
+        return;
+    }
+    det = difftime(now,st.st_atime);
+    int iterasi = 1;
+    char* namafile = malloc(1000000);
+    char* urutan = malloc(1000000);
+    snprintf(urutan, sizeof urutan, "%d", iterasi);
+    struct stat fp = {0};
+    strcpy(namafile, "/home/duhbuntu/Documents/makanan/makan_sehat");
+    while (det <= 30.0){
+        FILE* fd;
+        snprintf(urutan, sizeof urutan, "%d", iterasi);
+        strcat(namafile,urutan);
+        strcat(namafile,".txt");
+        if(stat(namafile,&fp) == -1){
+            fd = fopen(namafile,"w+");
+            fclose(fd);
+            break;
+        }
+        strcpy(namafile, "/home/duhbuntu/Documents/makanan/makan_sehat");
+        iterasi++;
+    }       
+}
+```
++ Pertama cek apakah file tersebut pernah dibuka menggunakan `stat()` dimana kita mencari `st_atime` dari `struct stat` atau Access Time, yang akan memberi tahu kapan terakhir ia dibuka. 
+```c
+struct stat st = {0};
+if (stat("/home/duhbuntu/Documents/makanan/makan_enak.txt", &st) == -1) {
+    perror("Gagal ");
+    return;
+}
+```
++ Lalu cek perbedaan waktunya menggunakan `difftime()`, dimana ia akan mereturn nilai double terhadap perbedaan waktunya hingga ketelitian milidetik. `det = difftime(now,st.st_atime);`
++ Apabila ia masih dalam rentang waktu 0 hingga 30 detik, maka, <br>
+  * *tanpa memperhatikan urutan*, buat file `makan_sehat#.txt` berdasarkan iterasi yang ada dengan `fopen(nama,'w+')`, dan kembailkan nilai iterasi.
+  ```c
+  if (det <= 30.0){
+        FILE* fd;
+        strcat(namafile,urutan);
+        strcat(namafile,".txt");
+        fd = fopen(namafile,"w+");
+        fclose(fd);
+        (*ke)++;
+    }
+  ```
+
+  * *dengan memperhatikan urutan*, maka iterasi satu persatu file `makan_sehat#.txt` berdasarkan file yang telah ada dengan `stat()`, dan cek apakah ada urutan yang belum diisi, apabila ada yang belum maka buat dengan `fopen(nama,'w+')`, lalu berhenti dari loop.
+  ```c
+  while (det <= 30.0){
+        FILE* fd;
+        snprintf(urutan, sizeof urutan, "%d", iterasi);
+        strcat(namafile,urutan);
+        strcat(namafile,".txt");
+        if(stat(namafile,&fp) == -1){
+            fd = fopen(namafile,"w+");
+            fclose(fd);
+            break;
+        }
+        strcpy(namafile, "/home/duhbuntu/Documents/makanan/makan_sehat");
+        iterasi++;
+    }
+  ```
 #
 <br>
 
@@ -361,5 +462,5 @@ Ket:
 NB: Dilarang menggunakan crontab dan tidak memakai argumen ketika menjalankan program.
 #
 ## Jawab
-asdasd
+Pada nomer
 #
