@@ -1,6 +1,13 @@
 # SoalShift_modul2_C13
 1. 17-0024 Mohammad Rizaldi Huzein Prastomo
 2. 17-0122 Muhammad Husni Ridhart Azzikry
+#
+1. [Soal1](#soal1)
+2. [Soal2](#soal2)
+3. [Soal3](#soal3)
+4. [Soal4](#soal4)
+5. [Soal5](#soal5)
+#
 
 # Soal1
 Elen mempunyai pekerjaan pada studio sebagai fotografer. Suatu hari ada seorang klien yang bernama Kusuma yang meminta untuk mengubah nama file yang memiliki ekstensi .png menjadi “[namafile]_grey.png”. Karena jumlah file yang diberikan Kusuma tidak manusiawi, maka Elen meminta bantuan kalian untuk membuat suatu program C yang dapat mengubah nama secara otomatis dan diletakkan pada direktori /home/[user]/modul2/gambar.
