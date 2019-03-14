@@ -9,6 +9,11 @@
 #include <dirent.h>
 #include <unistd.h>
 
+int checkpng(char* string)
+{
+  return !strcmp(string+(strlen(string)-4),".png") ? 1 : 0;
+}
+
 void checkandrename()
 {   
     struct stat st = {0};
@@ -18,6 +23,7 @@ void checkandrename()
     }
 
     char namafile[100];
+    memset(namafile,'\0',sizeof(namafile));
     DIR* dir;
     struct dirent* rent;
     
@@ -27,33 +33,27 @@ void checkandrename()
         return;
     }
     else{
+        // rent = readdir(dir);
         while((rent=readdir(dir))!=NULL){
+            // rent=readdir(dir);
+            printf("%s\n",rent->d_name);
+            if(strlen(rent->d_name)<4){continue;}
             strcpy(namafile,rent->d_name);
-            if(strstr(namafile,".png")){
+            if(checkpng(namafile)){
                 // printf("%s\n",namafile);
                 char* temp = malloc((strlen(namafile))+10);
                 char* from = malloc((strlen(namafile))+50);
                 char* dest = malloc((strlen(namafile))+50);
-                if(strstr(namafile,"_grey"))
-                {
-                    strcpy(from,"sisop/dummy-modul2/"); strcat(from,namafile);
-                    strcpy(dest,"modul2/gambar/"); strcat(dest,namafile);
-                    printf("%s %s\n",from,dest);
-                    int hasil = rename(from,dest);
-                    if(hasil<0) perror("Gagal ");
-                }
-                else
-                {
-                    strcpy(from,"sisop/dummy-modul2/"); strcat(from,namafile);
-                    strncpy(temp,namafile,strlen(namafile)-4);
-                    strcpy(dest,"modul2/gambar/"); strcat(temp,"_grey.png"); strcat(dest,temp);
-                    printf("%s %s\n",from,dest);
-                    int hasil = rename(from,dest);
-                    if(hasil<0) perror("Gagal ");
-                }
-                free(temp);
-                free(from);
-                free(dest);
+                
+                strcpy(from,"sisop/dummy-modul2/"); strcat(from,namafile);
+                strncpy(temp,namafile,strlen(namafile)-4);
+                strcpy(dest,"modul2/gambar/"); strcat(temp,"_grey.png"); strcat(dest,temp);
+                printf("%s\n%s\n",from,dest);
+                if(rename(from,dest)<0) perror("Gagal ");
+                memset(namafile,'\0',sizeof(namafile));
+                memset(temp,'\0',sizeof(temp));
+                memset(from,'\0',sizeof(from));
+                memset(dest,'\0',sizeof(dest));
             }
         }
         closedir(dir);
